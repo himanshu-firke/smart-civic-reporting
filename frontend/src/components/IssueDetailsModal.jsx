@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import html2pdf from "html2pdf.js";
 import { StatusTimeline } from "./StatusTimeline";
 
 export function IssueDetailsModal({ issue, onClose, defaultTab = "images" }) {
@@ -35,26 +34,48 @@ export function IssueDetailsModal({ issue, onClose, defaultTab = "images" }) {
     return `${days} days, ${remainingHours} hours, ${mins} minutes`;
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = () => {
     setIsDownloading(true);
-    const element = reportRef.current;
     
-    const opt = {
-      margin:       0.5,
-      filename:     `Civic_Report_${issue._id.substring(0, 8)}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    try {
-      await html2pdf().set(opt).from(element).save();
-    } catch (err) {
-      console.error("PDF Generation Error:", err);
-      alert("Failed to generate PDF report.");
-    } finally {
+    // Create an invisible iframe to isolate the print styles from Tailwind's oklch variables
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    
+    const content = reportRef.current.innerHTML;
+    
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <title>Civic_Report_${issue._id.substring(0, 8)}</title>
+          <style>
+            @media print {
+              @page { margin: 12mm; size: letter portrait; }
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: sans-serif; }
+            }
+          </style>
+        </head>
+        <body style="margin:0; padding:0;">
+          ${content}
+        </body>
+      </html>
+    `);
+    doc.close();
+    
+    // Allow images time to load into the iframe's DOM before triggering the print
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      document.body.removeChild(iframe);
       setIsDownloading(false);
-    }
+    }, 800);
   };
 
   return (
@@ -289,7 +310,7 @@ export function IssueDetailsModal({ issue, onClose, defaultTab = "images" }) {
                {/* Timeline component injection */}
                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-inner">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Lifespan Timeline</h4>
-                  <StatusTimeline status={issue.status} createdAt={issue.createdAt} updatedAt={issue.updatedAt} />
+                  <StatusTimeline currentStatus={issue.status} createdAt={issue.createdAt} updatedAt={issue.updatedAt} />
                </div>
             </div>
           )}
