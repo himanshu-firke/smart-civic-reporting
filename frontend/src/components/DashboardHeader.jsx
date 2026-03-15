@@ -37,7 +37,7 @@ export function DashboardHeader({ title, children }) {
             
             <div className="hidden sm:flex flex-col items-end mr-4 border-r border-gray-200 pr-4">
               <span className="text-sm font-bold text-gray-900 leading-tight">
-                {auth?.role || "User"}
+                {auth?.name || "User"}
               </span>
               <span className="text-xs text-green-600 font-medium tracking-wide">
                 ● Online

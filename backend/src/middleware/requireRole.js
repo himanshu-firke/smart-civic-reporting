@@ -2,9 +2,15 @@ function requireRole(roles) {
   const allowed = Array.isArray(roles) ? roles : [roles];
 
   return function roleGuard(req, res, next) {
-    const role = req.user?.role;
+    let role = req.user?.role;
     if (!role) {
       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Normalize spacing discrepancy for Department Admins
+    if (role === "Department Admin") {
+      role = "DepartmentAdmin";
+      req.user.role = "DepartmentAdmin"; // Ensure downstream routes see the normalized string
     }
 
     if (!allowed.includes(role)) {

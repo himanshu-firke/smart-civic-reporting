@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../api/client";
 import { DashboardHeader } from "../../components/DashboardHeader";
 import { DepartmentHeatmap } from "../../components/DepartmentHeatmap";
+import { getAuth } from "../../auth/authStorage";
 
 export function DepartmentAdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState("workers"); // 'workers', 'issues', 'map'
+  const auth = getAuth();
+  const [activeTab, setActiveTab] = useState("workers"); // 'workers', 'issues', 'map', 'analytics'
 
   // Worker Tab State
   const [workers, setWorkers] = useState([]);
@@ -32,6 +34,11 @@ export function DepartmentAdminDashboardPage() {
   const [selectedWorkerId, setSelectedWorkerId] = useState("");
   const [reassignLoading, setReassignLoading] = useState(false);
 
+  // Analytics State
+  const [analyticsData, setAnalyticsData] = useState([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState(null);
+
   useEffect(() => {
     if (activeTab === "workers") {
       fetchWorkers();
@@ -39,6 +46,8 @@ export function DepartmentAdminDashboardPage() {
       fetchIssues();
       // Pre-fetch workers so they are immediately available for reassignment dropdowns
       if (workers.length === 0) fetchWorkers();
+    } else if (activeTab === "analytics") {
+       fetchAnalytics();
     }
   }, [activeTab]);
 
@@ -138,6 +147,20 @@ export function DepartmentAdminDashboardPage() {
     }
   };
 
+  // --- ANALYTICS METHODS ---
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const data = await apiFetch("/api/dept-admin/analytics");
+      setAnalyticsData(data.analytics || []);
+      setAnalyticsError(null);
+    } catch (err) {
+      setAnalyticsError("Failed to fetch analytics metrics. " + err.message);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
   // --- RENDER HELPERS ---
   const getPriorityBadgeColor = (priority) => {
     switch (priority) {
@@ -161,7 +184,7 @@ export function DepartmentAdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <DashboardHeader title="Department HQ" />
+      <DashboardHeader title={auth?.departmentName || "Department HQ"} />
 
       <div className="p-8 max-w-7xl mx-auto space-y-8">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-200 pb-6">
@@ -188,6 +211,12 @@ export function DepartmentAdminDashboardPage() {
               className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${activeTab === "map" ? "border-b-4 border-indigo-600 text-indigo-700 bg-indigo-50/50" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
             >
               Geospatial Analytics
+            </button>
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors border-l border-gray-100 ${activeTab === "analytics" ? "border-b-4 border-indigo-600 text-indigo-700 bg-indigo-50/50" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+            >
+              Worker Analytics
             </button>
           </div>
         </header>
@@ -301,9 +330,9 @@ export function DepartmentAdminDashboardPage() {
               {workerLoading ? <p className="text-gray-500 text-sm py-4">Loading operational roster...</p> : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {workers.map(worker => (
-                    <div key={worker._id} className="border border-gray-100 rounded-2xl p-5 hover:border-indigo-200 hover:shadow-md transition-all bg-gray-50 group">
-                      <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-600 transition-colors">{worker.user?.name}</h3>
-                      <p className="text-sm text-gray-500 mb-3">{worker.user?.email}</p>
+                    <div key={worker.id} className="border border-gray-100 rounded-2xl p-5 hover:border-indigo-200 hover:shadow-md transition-all bg-gray-50 group">
+                      <h3 className="font-bold text-gray-900 text-lg group-hover:text-indigo-600 transition-colors">{worker.name}</h3>
+                      <p className="text-sm text-gray-500 mb-3">{worker.email}</p>
                       
                       <div className="bg-white p-3 rounded-lg border border-gray-100 text-xs">
                         <div className="flex justify-between mb-1">
@@ -377,6 +406,76 @@ export function DepartmentAdminDashboardPage() {
              <DepartmentHeatmap issues={issues} />
            </div>
         )}
+
+        {/* ------------------------------------------------------------- 
+            TAB 4: WORKER ANALYTICS (EFFICIENCY METRICS)
+        ------------------------------------------------------------- */}
+        {activeTab === "analytics" && (
+           <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/40 border border-gray-100 p-8 animate-in fade-in duration-300 min-h-[400px]">
+             <div className="mb-6 flex justify-between items-end">
+               <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Operative Efficiency Tracker</h3>
+                  <p className="text-gray-500">Monitor individual field worker performance: total assignments vs completed closures.</p>
+               </div>
+               <div className="text-right">
+                 <span className="text-3xl font-black text-indigo-600">{analyticsData.reduce((acc, curr) => acc + curr.completed, 0)}</span>
+                 <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Total Resolutions</p>
+               </div>
+             </div>
+             
+             {analyticsError && <p className="text-red-500 bg-red-50 p-4 rounded-xl font-medium text-sm">{analyticsError}</p>}
+             {analyticsLoading ? (
+                 <div className="text-center py-20 text-gray-500">Compiling efficiency algorithms...</div>
+             ) : (
+                <div className="overflow-hidden border border-gray-100 rounded-2xl">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-bold">
+                        <th className="p-4 pl-6">Operative Name</th>
+                        <th className="p-4">Contact Protocol</th>
+                        <th className="p-4 text-center">Total Assigned</th>
+                        <th className="p-4 text-center text-emerald-600">Completed</th>
+                        <th className="p-4 text-center text-amber-600">Pending</th>
+                        <th className="p-4 pr-6 text-right">Completion Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {analyticsData.map(stat => (
+                        <tr key={stat.workerId} className="hover:bg-indigo-50/20 transition-colors">
+                          <td className="p-4 pl-6 font-bold text-gray-900">
+                            {stat.workerName}
+                          </td>
+                          <td className="p-4 text-sm text-gray-500">
+                            {stat.workerEmail}
+                          </td>
+                          <td className="p-4 text-center font-bold text-gray-700">
+                            {stat.totalAssigned}
+                          </td>
+                          <td className="p-4 text-center font-bold text-emerald-600">
+                            {stat.completed}
+                          </td>
+                          <td className="p-4 text-center font-bold text-amber-600">
+                            {stat.pending}
+                          </td>
+                          <td className="p-4 pr-6 text-right">
+                             <div className="flex items-center justify-end gap-3">
+                               <div className="w-24 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                  <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${stat.completionRate}%` }}></div>
+                               </div>
+                               <span className="font-mono text-sm font-bold text-gray-700 w-10">{stat.completionRate}%</span>
+                             </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {analyticsData.length === 0 && (
+                        <tr><td colSpan="6" className="p-8 text-center text-gray-500 text-sm">No assignments active in standard analytics index.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+             )}
+           </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------- 
@@ -396,7 +495,7 @@ export function DepartmentAdminDashboardPage() {
                >
                  <option value="" disabled>Select an active worker...</option>
                  {workers.map(w => (
-                   <option key={w._id} value={w._id}>{w.user?.name} (Radius: {w.serviceRadiusKm}km)</option>
+                   <option key={w.id} value={w.userId}>{w.name} (Radius: {w.serviceRadiusKm}km)</option>
                  ))}
                </select>
 

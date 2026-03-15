@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const Department = require("../models/Department");
@@ -118,9 +119,11 @@ deptAdminRouter.get("/issues", async (req, res) => {
     const departmentId = req.user.departmentId;
     
     const issues = await Issue.find({ departmentId })
-      .populate("assignedWorkerId")
-      .populate("citizenId", "name email")
+      .select("-completionImageUrl -imageUrl") // Exclude heavy image strings from the massive roster list payload
+      .populate("assignedWorkerId", "name") // Exclude full object, just get worker name
+      .populate("citizenId", "name") // Just get citizen name
       .sort({ createdAt: -1 })
+      .limit(500) // Safeguard against payload explosion
       .lean();
 
     res.json({ issues });
@@ -200,6 +203,71 @@ deptAdminRouter.put("/issues/:id/verify", async (req, res) => {
   } catch (error) {
     console.error("DeptAdmin Verify Issue Error:", error);
     res.status(500).json({ message: "Internal server error verifying issue." });
+  }
+});
+
+// GET /api/dept-admin/analytics - Worker efficiency metrics
+deptAdminRouter.get("/analytics", async (req, res) => {
+  try {
+    const departmentId = req.user.departmentId;
+    if (!departmentId) {
+      return res.status(403).json({ message: "Admin is missing a department assignment." });
+    }
+
+    // 1. Fetch all worker profiles for this department
+    const departmentWorkers = await Worker.find({ 
+       departmentId: departmentId 
+    }).populate("userId", "name email");
+
+    // 2. Aggregate issues by worker to calculate performance metrics
+    const workerStats = await Issue.aggregate([
+      { 
+        $match: { 
+           departmentId: new mongoose.Types.ObjectId(departmentId),
+           assignedWorkerId: { $ne: null } 
+        } 
+      },
+      {
+        $group: {
+          _id: "$assignedWorkerId",
+          totalAssigned: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $in: ["$status", ["Resolved", "Closed"]] }, 1, 0] }
+          },
+          pending: {
+            $sum: { $cond: [{ $in: ["$status", ["Submitted", "Assigned", "InProgress"]] }, 1, 0] }
+          }
+        }
+      }
+    ]);
+
+    // 3. Map the stats back to the full list of workers
+    const statsMap = workerStats.reduce((acc, curr) => {
+       acc[curr._id.toString()] = curr;
+       return acc;
+    }, {});
+
+    const analytics = departmentWorkers.map(workerProfile => {
+       const user = workerProfile.userId;
+       if (!user) return null; // Protect against orphaned records
+
+       const stat = statsMap[workerProfile._id.toString()] || { totalAssigned: 0, completed: 0, pending: 0 };
+       
+       return {
+         workerId: workerProfile._id, // Frontend uses this as key
+         workerName: user.name,
+         workerEmail: user.email,
+         totalAssigned: stat.totalAssigned,
+         completed: stat.completed,
+         pending: stat.pending,
+         completionRate: stat.totalAssigned > 0 ? Math.round((stat.completed / stat.totalAssigned) * 100) : 0
+       };
+    }).filter(w => w !== null);
+
+    res.json({ analytics });
+  } catch (error) {
+    console.error("DeptAdmin Analytics Error:", error);
+    res.status(500).json({ message: "Internal server error generating analytics." });
   }
 });
 

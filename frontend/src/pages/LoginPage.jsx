@@ -22,7 +22,7 @@ export function LoginPage() {
         body: JSON.stringify({ email, password })
       });
       
-      setAuth({ token: data.token, role: data.user.role });
+      setAuth({ token: data.token, ...data.user });
       navigate("/app", { replace: true });
     } catch (err) {
       setError(err.message || "Failed to log in.");

@@ -77,7 +77,7 @@ export function WorkerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <DashboardHeader title="Field Worker Portal" />
+      <DashboardHeader title="Worker" />
 
       <div className="p-8 max-w-7xl mx-auto">
         <header className="mb-10">

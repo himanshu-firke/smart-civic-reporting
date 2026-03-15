@@ -53,7 +53,8 @@ authRouter.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).populate("departmentId", "name");
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -66,7 +67,7 @@ authRouter.post("/login", async (req, res) => {
     const payload = {
       userId: user._id,
       role: user.role,
-      ...(user.departmentId && { departmentId: user.departmentId })
+      ...(user.departmentId && { departmentId: user.departmentId._id })
     };
 
     const token = jwt.sign(
@@ -82,7 +83,8 @@ authRouter.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        departmentId: user.departmentId
+        departmentId: user.departmentId ? user.departmentId._id : undefined,
+        departmentName: user.departmentId ? user.departmentId.name : undefined
       }
     });
 

@@ -25,6 +25,7 @@ function RoleIndex() {
     case "SuperAdmin":
       return <Navigate to="/super-admin" replace />;
     case "DepartmentAdmin":
+    case "Department Admin":
       return <Navigate to="/department-admin" replace />;
     case "Worker":
       return <Navigate to="/worker" replace />;
@@ -78,7 +79,7 @@ export function App() {
         <Route
           path="/department-admin"
           element={
-            <ProtectedRoute allowedRoles={["DepartmentAdmin"]}>
+            <ProtectedRoute allowedRoles={["DepartmentAdmin", "Department Admin"]}>
               <DepartmentAdminDashboardPage />
             </ProtectedRoute>
           }

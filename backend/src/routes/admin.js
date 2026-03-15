@@ -36,7 +36,9 @@ adminRouter.post("/department-admins", async (req, res) => {
       return res.status(404).json({ message: "Assigned Department does not exist." });
     }
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email is already registered." });
     }
@@ -46,9 +48,9 @@ adminRouter.post("/department-admins", async (req, res) => {
 
     const newAdmin = new User({
       name,
-      email,
+      email: normalizedEmail,
       passwordHash,
-      role: "Department Admin",
+      role: "DepartmentAdmin",
       departmentId
     });
 
@@ -64,6 +66,56 @@ adminRouter.post("/department-admins", async (req, res) => {
   }
 });
 
+// PUT /api/admin/department-admins/:id - Update an existing Dept Admin
+adminRouter.put("/department-admins/:id", async (req, res) => {
+  try {
+    const { name, email, departmentId } = req.body;
+    const adminUser = await User.findById(req.params.id);
+
+    if (!adminUser || (adminUser.role !== "DepartmentAdmin" && adminUser.role !== "Department Admin")) {
+      return res.status(404).json({ message: "Department Admin not found." });
+    }
+
+    let normalizedEmail = email;
+    if (email && email.toLowerCase() !== adminUser.email.toLowerCase()) {
+      normalizedEmail = email.toLowerCase();
+      const emailExists = await User.findOne({ email: normalizedEmail });
+      if (emailExists) return res.status(400).json({ message: "Email already taken." });
+      adminUser.email = normalizedEmail;
+    }
+
+    if (name) adminUser.name = name;
+    if (departmentId) {
+      const deptExists = await Department.findById(departmentId);
+      if (!deptExists) return res.status(400).json({ message: "Invalid department ID." });
+      adminUser.departmentId = departmentId;
+    }
+
+    await adminUser.save();
+    res.json({ message: "Department Admin updated", user: adminUser });
+  } catch (error) {
+    console.error("Update Dept Admin Error:", error);
+    res.status(500).json({ message: "Server error updating config." });
+  }
+});
+
+// DELETE /api/admin/department-admins/:id - Remove a Dept Admin
+adminRouter.delete("/department-admins/:id", async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.params.id);
+    if (!adminUser || (adminUser.role !== "DepartmentAdmin" && adminUser.role !== "Department Admin")) {
+      return res.status(404).json({ message: "Department Admin not found." });
+    }
+
+    // Optional: Reassign workers or orphaned data if necessary, here we just delete
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "Department Admin successfully removed." });
+  } catch (error) {
+    console.error("Delete Dept Admin Error:", error);
+    res.status(500).json({ message: "Server error deleting admin." });
+  }
+});
+
 // GET /api/admin/analytics - Aggregated system metrics
 adminRouter.get("/analytics", async (req, res) => {
   try {
@@ -74,29 +126,42 @@ adminRouter.get("/analytics", async (req, res) => {
       { $group: { _id: "$status", count: { $sum: 1 } } }
     ]);
 
-    // Format into a clean object instead of an array of objects
-    const byStatus = {
-      Submitted: 0,
-      Assigned: 0,
-      InProgress: 0,
-      Resolved: 0,
-      Closed: 0
-    };
-
-    statusCounts.forEach(item => {
-      // Map the DB enum to our tracker keys if needed, assuming direct match for now
-      if (byStatus[item._id] !== undefined) {
-        byStatus[item._id] = item.count;
-      } else {
-        // Fallback for loosely typed statuses mapping
-        byStatus[item._id] = item.count;
+    // Aggregate issues by department AND status
+    const departmentStatsRaw = await Issue.aggregate([
+      { 
+        $group: { 
+          _id: { departmentId: "$departmentId", status: "$status" }, 
+          count: { $sum: 1 } 
+        } 
       }
+    ]);
+
+    const departments = await Department.find({}).lean();
+    const deptMap = {};
+    departments.forEach(d => {
+      deptMap[d._id.toString()] = {
+        name: d.name,
+        statuses: { Submitted: 0, Assigned: 0, InProgress: 0, Resolved: 0, Closed: 0 }
+      };
+    });
+
+    departmentStatsRaw.forEach(stat => {
+      const dId = stat._id.departmentId ? stat._id.departmentId.toString() : null;
+      if (dId && deptMap[dId]) {
+        deptMap[dId].statuses[stat._id.status] = stat.count;
+      }
+    });
+
+    const byStatus = { Submitted: 0, Assigned: 0, InProgress: 0, Resolved: 0, Closed: 0 };
+    statusCounts.forEach(item => {
+      if (byStatus[item._id] !== undefined) byStatus[item._id] = item.count;
     });
 
     res.json({
       metrics: {
         totalIssues,
-        byStatus
+        byStatus,
+        byDepartment: Object.values(deptMap)
       }
     });
   } catch (error) {

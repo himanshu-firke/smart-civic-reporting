@@ -52,7 +52,7 @@ export function CitizenDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <DashboardHeader title="Citizen Portal" />
+      <DashboardHeader title="Citizen" />
       
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8">
         

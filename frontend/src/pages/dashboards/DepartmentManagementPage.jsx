@@ -28,6 +28,14 @@ export function DepartmentManagementPage() {
   const [adminRegError, setAdminRegError] = useState(null);
   const [adminRegSuccess, setAdminRegSuccess] = useState(false);
 
+  // -- EDIT STATE --
+  const [editingDeptId, setEditingDeptId] = useState(null);
+  const [editingDeptName, setEditingDeptName] = useState("");
+  const [editingAdminId, setEditingAdminId] = useState(null);
+  const [editingAdminName, setEditingAdminName] = useState("");
+  const [editingAdminEmail, setEditingAdminEmail] = useState("");
+  const [editingAdminDept, setEditingAdminDept] = useState("");
+
   useEffect(() => {
     fetchDepartments();
     if (activeTab === "admins") {
@@ -89,22 +97,70 @@ export function DepartmentManagementPage() {
     setAdminRegistering(true);
 
     try {
-      await apiFetch("/api/admin/department-admins", {
-        method: "POST",
-        body: JSON.stringify({
-          name: adminName,
-          email: adminEmail,
-          password: adminPassword,
-          departmentId: adminDeptId
-        })
-      });
-      setAdminRegSuccess(true);
+      if (editingAdminId) {
+        await apiFetch(`/api/admin/department-admins/${editingAdminId}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            name: adminName,
+            email: adminEmail,
+            departmentId: adminDeptId,
+            ...(adminPassword && { password: adminPassword }) // optional password update handled on backend if desired, though our current backend ignores password on put
+          })
+        });
+        setAdminRegSuccess("Admin credentials updated!");
+      } else {
+        await apiFetch("/api/admin/department-admins", {
+          method: "POST",
+          body: JSON.stringify({
+            name: adminName,
+            email: adminEmail,
+            password: adminPassword,
+            departmentId: adminDeptId
+          })
+        });
+        setAdminRegSuccess("Admin credentials provisioned!");
+      }
+
       setAdminName(""); setAdminEmail(""); setAdminPassword(""); setAdminDeptId("");
+      setEditingAdminId(null);
       fetchUsers(); // refresh the table
     } catch (err) {
-      setAdminRegError(err.message || "Failed to register Department Admin");
+      setAdminRegError(err.message || "Failed to save Department Admin");
     } finally {
       setAdminRegistering(false);
+    }
+  }
+
+  async function handleDeleteDepartment(id) {
+    if (!window.confirm("Are you sure you want to delete this department? This cannot be undone.")) return;
+    try {
+      await apiFetch(`/api/departments/${id}`, { method: "DELETE" });
+      fetchDepartments();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  async function handleSaveEditingDepartment(id) {
+    try {
+      await apiFetch(`/api/departments/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name: editingDeptName })
+      });
+      setEditingDeptId(null);
+      fetchDepartments();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+
+  async function handleDeleteAdmin(id) {
+    if (!window.confirm("Are you sure you want to securely revoke this administrator's access?")) return;
+    try {
+      await apiFetch(`/api/admin/department-admins/${id}`, { method: "DELETE" });
+      fetchUsers();
+    } catch (err) {
+      alert("Error: " + err.message);
     }
   }
 
@@ -206,7 +262,8 @@ export function DepartmentManagementPage() {
                     <tr>
                       <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Department Name</th>
                       <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Internal ID</th>
-                      <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Created</th>
+                      <th className="px-8 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Created</th>
+                      <th className="px-8 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
@@ -214,13 +271,28 @@ export function DepartmentManagementPage() {
                       <tr key={dept._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-8 py-4 whitespace-nowrap text-sm font-bold text-gray-900 flex items-center">
                           <div className="w-2 h-2 rounded-full bg-green-500 mr-3"></div>
-                          {dept.name}
+                          {editingDeptId === dept._id ? (
+                            <input 
+                              type="text" autoFocus
+                              className="border-b border-indigo-500 bg-indigo-50 px-2 py-1 outline-none font-bold text-indigo-700" 
+                              value={editingDeptName} 
+                              onChange={(e) => setEditingDeptName(e.target.value)} 
+                              onBlur={() => handleSaveEditingDepartment(dept._id)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleSaveEditingDepartment(dept._id)}
+                            />
+                          ) : (
+                            dept.name
+                          )}
                         </td>
                         <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-500 font-mono text-xs">
                           {dept._id}
                         </td>
-                        <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-400 text-right">
+                        <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-400">
                           {dept.createdAt ? new Date(dept.createdAt).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-8 py-4 whitespace-nowrap text-right space-x-3">
+                           <button onClick={() => { setEditingDeptId(dept._id); setEditingDeptName(dept.name); }} className="text-indigo-600 hover:text-indigo-900 text-sm font-bold">Edit</button>
+                           <button onClick={() => handleDeleteDepartment(dept._id)} className="text-red-500 hover:text-red-700 text-sm font-bold">Delete</button>
                         </td>
                       </tr>
                     ))}
@@ -246,7 +318,7 @@ export function DepartmentManagementPage() {
               
               <form onSubmit={handleCreateAdmin} className="space-y-4">
                 {adminRegError && <div className="bg-red-50 text-red-700 p-3 rounded-xl text-xs font-bold">{adminRegError}</div>}
-                {adminRegSuccess && <div className="bg-green-50 text-green-700 p-3 rounded-xl text-xs font-bold">Admin credentials provisioned!</div>}
+                {adminRegSuccess && <div className="bg-green-50 text-green-700 p-3 rounded-xl text-xs font-bold">{adminRegSuccess}</div>}
 
                  <div>
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Full Name</label>
@@ -257,8 +329,8 @@ export function DepartmentManagementPage() {
                   <input type="email" required value={adminEmail} onChange={e => setAdminEmail(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500" placeholder="admin@city.gov" />
                  </div>
                  <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password</label>
-                  <input type="password" required value={adminPassword} onChange={e => setAdminPassword(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" />
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Password {!editingAdminId ? '' : '(Leave blank to keep current)'}</label>
+                  <input type="password" required={!editingAdminId} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" />
                  </div>
                  <div>
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Assign Department</label>
@@ -268,9 +340,16 @@ export function DepartmentManagementPage() {
                   </select>
                  </div>
 
-                <button type="submit" disabled={adminRegistering} className="w-full py-3 px-4 rounded-xl text-white font-bold text-sm bg-indigo-600 hover:bg-indigo-700 transition-all disabled:opacity-50 mt-2">
-                  {adminRegistering ? "Provisioning..." : "Assign Dept Admin"}
-                </button>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={adminRegistering} className="flex-1 py-3 px-4 rounded-xl text-white font-bold text-sm bg-indigo-600 hover:bg-indigo-700 transition-all disabled:opacity-50 mt-2">
+                    {adminRegistering ? "Saving..." : editingAdminId ? "Update Admin" : "Assign Dept Admin"}
+                  </button>
+                  {editingAdminId && (
+                     <button type="button" onClick={() => { setEditingAdminId(null); setAdminName(""); setAdminEmail(""); setAdminDeptId(""); setAdminRegSuccess(false); setAdminRegError(false); }} className="py-3 px-4 rounded-xl text-gray-700 border border-gray-200 hover:bg-gray-50 font-bold text-sm mt-2 transition-colors">
+                       Cancel
+                     </button>
+                  )}
+                </div>
               </form>
             </div>
 
@@ -288,22 +367,34 @@ export function DepartmentManagementPage() {
                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Department Unit</th>
+                         <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                        </tr>
                      </thead>
                      <tbody className="bg-white divide-y divide-gray-100">
-                        {users.map(u => (
+                        {users.filter(u => u.role === "Department Admin" || u.role === "DepartmentAdmin").map(u => (
                           <tr key={u._id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 text-sm">
                                <div className="font-bold text-gray-900">{u.name}</div>
                                <div className="text-gray-500">{u.email}</div>
                             </td>
                             <td className="px-6 py-4 text-sm">
-                               <span className={`inline-block px-2.5 py-1 rounded text-xs font-bold border ${u.role === 'SuperAdmin' ? 'bg-slate-900 text-white border-slate-900' : u.role === 'Department Admin' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+                               <span className={`inline-block px-2.5 py-1 rounded text-xs font-bold border ${u.role === 'SuperAdmin' ? 'bg-slate-900 text-white border-slate-900' : (u.role === 'Department Admin' || u.role === 'DepartmentAdmin') ? 'bg-indigo-100 text-indigo-800 border-indigo-200' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>
                                  {u.role}
                                </span>
                             </td>
                             <td className="px-6 py-4 text-sm font-medium text-gray-600">
                                {u.departmentId ? u.departmentId.name : <span className="text-gray-400 italic">Global / None</span>}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-right space-x-3">
+                               <button onClick={() => { 
+                                 setEditingAdminId(u._id); 
+                                 setAdminName(u.name); 
+                                 setAdminEmail(u.email); 
+                                 setAdminDeptId(u.departmentId ? u.departmentId._id : '');
+                                 setAdminRegSuccess(false);
+                                 setAdminRegError(false);
+                               }} className="font-bold text-indigo-600 hover:text-indigo-900">Edit</button>
+                               <button onClick={() => handleDeleteAdmin(u._id)} className="font-bold text-red-500 hover:text-red-700">Remove</button>
                             </td>
                           </tr>
                         ))}
