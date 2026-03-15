@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recha
 import { apiFetch } from "../../api/client";
 import { DashboardHeader } from "../../components/DashboardHeader";
 import { DepartmentHeatmap } from "../../components/DepartmentHeatmap";
+import { IssueDetailsModal } from "../../components/IssueDetailsModal";
 
 export function SuperAdminDashboardPage() {
   const navigate = useNavigate();
@@ -12,6 +13,10 @@ export function SuperAdminDashboardPage() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Modal State
+  const [viewModalIssue, setViewModalIssue] = useState(null);
+  const [viewModalTab, setViewModalTab] = useState("images");
 
   // Filters for Global Logs
   const [logStatusFilter, setLogStatusFilter] = useState("All");
@@ -285,7 +290,9 @@ export function SuperAdminDashboardPage() {
                          <th className="p-4 pl-6">Date</th>
                          <th className="p-4">Department</th>
                          <th className="p-4">Citizen</th>
-                         <th className="p-4 w-1/3">Description</th>
+                         <th className="p-4 w-1/4">Description</th>
+                         <th className="p-4 text-center">View (Images)</th>
+                         <th className="p-4 text-center">More (Details)</th>
                          <th className="p-4 pr-6 text-right">State</th>
                        </tr>
                      </thead>
@@ -309,6 +316,22 @@ export function SuperAdminDashboardPage() {
                             <td className="p-4 text-slate-500">
                                <span className="line-clamp-2">{issue.description}</span>
                             </td>
+                            <td className="p-4 text-center">
+                              <button
+                                onClick={() => { setViewModalIssue(issue); setViewModalTab("images"); }}
+                                className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors"
+                              >
+                                Images
+                              </button>
+                            </td>
+                            <td className="p-4 text-center">
+                              <button
+                                onClick={() => { setViewModalIssue(issue); setViewModalTab("details"); }}
+                                className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors"
+                              >
+                                Report PDF
+                              </button>
+                            </td>
                             <td className="p-4 pr-6 text-right">
                                <span className={`inline-block px-2.5 py-1 rounded text-xs font-bold border ${getStatusColor(issue.status)}`}>
                                  {issue.status}
@@ -325,6 +348,15 @@ export function SuperAdminDashboardPage() {
           </div>
         )}
       </div>
+
+      {viewModalIssue && (
+        <IssueDetailsModal 
+           issue={viewModalIssue} 
+           onClose={() => setViewModalIssue(null)} 
+           defaultTab={viewModalTab} 
+        />
+      )}
+
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { apiFetch } from "../../api/client";
 import { DashboardHeader } from "../../components/DashboardHeader";
 import { DepartmentHeatmap } from "../../components/DepartmentHeatmap";
 import { getAuth } from "../../auth/authStorage";
+import { IssueDetailsModal } from "../../components/IssueDetailsModal";
 
 export function DepartmentAdminDashboardPage() {
   const auth = getAuth();
@@ -28,6 +29,8 @@ export function DepartmentAdminDashboardPage() {
   const [issuesError, setIssuesError] = useState(null);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [isVerifyLoading, setIsVerifyLoading] = useState(false);
+  const [viewModalIssue, setViewModalIssue] = useState(null);
+  const [viewModalTab, setViewModalTab] = useState("images");
 
   // Reassignment Modal State
   const [reassigningIssue, setReassigningIssue] = useState(null);
@@ -259,8 +262,10 @@ export function DepartmentAdminDashboardPage() {
                         <th className="p-4 pl-6">Complaint</th>
                         <th className="p-4">Citizen</th>
                         <th className="p-4">Assigned Worker</th>
-                        <th className="p-4 w-40">Priority</th>
+                        <th className="p-4">Priority</th>
                         <th className="p-4">Status</th>
+                        <th className="p-4 text-center">View (Images)</th>
+                        <th className="p-4 text-center">More (Details)</th>
                         <th className="p-4 pr-6 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -281,7 +286,7 @@ export function DepartmentAdminDashboardPage() {
                           <td className="p-4 text-sm">
                             {issue.assignedWorkerId ? (
                               <span className="font-medium text-indigo-700 flex items-center">
-                                {issue.assignedWorkerId.name || "Worker Assigned"}
+                                {issue.assignedWorkerId?.userId?.name || "Worker Assigned"}
                               </span>
                             ) : (
                               <span className="text-gray-400 italic">Unassigned</span>
@@ -302,6 +307,22 @@ export function DepartmentAdminDashboardPage() {
                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold ${getStatusBadgeColor(issue.status)}`}>
                                {issue.status}
                              </span>
+                          </td>
+                          <td className="p-4 text-center">
+                             <button
+                               onClick={() => { setViewModalIssue(issue); setViewModalTab("images"); }}
+                               className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 transition-colors"
+                             >
+                               Images
+                             </button>
+                          </td>
+                          <td className="p-4 text-center">
+                             <button
+                               onClick={() => { setViewModalIssue(issue); setViewModalTab("details"); }}
+                               className="text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors"
+                             >
+                               Report PDF
+                             </button>
                           </td>
                           <td className="p-4 pr-6 text-right space-x-2">
                              {/* Reassign Button */}
@@ -596,6 +617,17 @@ export function DepartmentAdminDashboardPage() {
 
           </div>
         </div>
+      )}
+
+      {/* ------------------------------------------------------------- 
+          MODAL: VIEW / MORE DETAILS (PDF Report Generator)
+      ------------------------------------------------------------- */}
+      {viewModalIssue && (
+        <IssueDetailsModal 
+           issue={viewModalIssue} 
+           onClose={() => setViewModalIssue(null)} 
+           defaultTab={viewModalTab} 
+        />
       )}
 
     </div>

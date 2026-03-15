@@ -120,8 +120,13 @@ deptAdminRouter.get("/issues", async (req, res) => {
     const departmentId = req.user.departmentId;
     
     const issues = await Issue.find({ departmentId })
-      .select("-completionImageUrl -imageUrl") // Exclude heavy image strings from the massive roster list payload
-      .populate("assignedWorkerId", "name") // Exclude full object, just get worker name
+      .populate({
+        path: "assignedWorkerId",
+        populate: {
+          path: "userId",
+          select: "name"
+        }
+      })
       .populate("citizenId", "name") // Just get citizen name
       .sort({ createdAt: -1 })
       .limit(500) // Safeguard against payload explosion
@@ -141,7 +146,13 @@ deptAdminRouter.get("/issues/:id", async (req, res) => {
     const departmentId = req.user.departmentId;
 
     const issue = await Issue.findOne({ _id: id, departmentId })
-      .populate("assignedWorkerId")
+      .populate({
+        path: "assignedWorkerId",
+        populate: {
+          path: "userId",
+          select: "name email"
+        }
+      })
       .populate("citizenId", "name email")
       .lean();
 

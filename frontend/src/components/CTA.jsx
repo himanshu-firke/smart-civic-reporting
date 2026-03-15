@@ -1,42 +1,73 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const steps = [
+  {
+    num: "1",
+    title: "Capture the Issue",
+    desc: "Take a clear photo of the infrastructure problem using your mobile device or camera."
+  },
+  {
+    num: "2",
+    title: "Add Location Details",
+    desc: "GPS automatically captures the exact location, or manually adjust for precision."
+  },
+  {
+    num: "3",
+    title: "Submit Your Report",
+    desc: "Add a brief description and submit your report to the appropriate authorities."
+  },
+  {
+    num: "4",
+    title: "Track Progress",
+    desc: "Monitor the status of your report and receive updates in real-time."
+  }
+];
+
 export function CTA() {
   return (
-    <section className="py-24 bg-slate-950 relative overflow-hidden border-t border-white/5">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute right-0 bottom-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 mix-blend-screen"></div>
+    <section className="py-24 bg-slate-950 relative overflow-hidden border-none pt-32">
+      {/* Slanted Transition from Features */}
+      <div 
+        className="absolute top-0 left-0 w-full h-32 bg-slate-900 -translate-y-16 z-0"
+        style={{ clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 100%)" }}
+      ></div>
+
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute right-0 bottom-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 mix-blend-screen"></div>
         <div className="absolute left-0 top-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 mix-blend-screen"></div>
       </div>
       
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="bg-slate-900/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-10 sm:p-16 text-center shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2 transition-transform duration-700 group">
-          {/* Decorative shapes */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:bg-emerald-400/20 transition-colors duration-700"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 group-hover:bg-indigo-500/30 transition-colors duration-700"></div>
-          
-          <h2 className="text-3xl sm:text-5xl font-black text-white mb-6 relative z-10 font-display tracking-tight">
-            Deploy infrastructure <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">today</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* How It Works Header */}
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-6 font-display tracking-tight">
+            How It Works
           </h2>
-          <p className="text-slate-400 text-lg sm:text-xl mb-10 max-w-2xl mx-auto relative z-10 font-medium leading-relaxed">
-            Join the decentralized network of citizens and government officials working together to build cleaner, safer, and smarter urban environments.
+          <p className="text-xl text-slate-400 font-medium leading-relaxed">
+            Reporting civic issues is simple and straightforward. Follow these four easy steps to make a difference.
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 relative z-10">
-            <Link
-              to="/register"
-              className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-900 font-black hover:from-emerald-500 hover:to-teal-600 transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(52,211,153,0.3)] tracking-wide"
-            >
-              Initialize Node
-            </Link>
-            <Link
-               to="/login"
-               className="w-full sm:w-auto px-10 py-5 rounded-2xl border border-white/20 bg-white/5 text-white font-bold hover:bg-white/10 transition-all transform hover:-translate-y-1 backdrop-blur-md"
-            >
-              Authenticate
-            </Link>
-          </div>
         </div>
+
+        {/* 4 Steps Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-32 relative">
+          {/* Connector Line (Desktop Only) */}
+          <div className="hidden lg:block absolute top-10 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-blue-500/20 via-blue-500/50 to-blue-500/20 z-0"></div>
+          
+          {steps.map((step, idx) => (
+            <div key={idx} className="relative z-10 flex flex-col items-center text-center group">
+              <div className="w-20 h-20 rounded-full bg-slate-900 border-4 border-slate-800 text-3xl font-black text-white flex items-center justify-center mb-6 shadow-xl group-hover:border-blue-500 group-hover:text-blue-400 transition-colors duration-300">
+                {step.num}
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed max-w-[250px]">
+                {step.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+
       </div>
     </section>
   );
