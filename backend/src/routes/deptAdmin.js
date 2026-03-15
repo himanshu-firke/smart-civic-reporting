@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const Department = require("../models/Department");
 const Worker = require("../models/Worker");
 const Issue = require("../models/Issue");
+const Notification = require("../models/Notification");
 const { authMiddleware } = require("../middleware/auth");
 const { requireRole } = require("../middleware/requireRole");
 
@@ -198,6 +199,13 @@ deptAdminRouter.put("/issues/:id/verify", async (req, res) => {
 
     issue.status = "Closed";
     await issue.save();
+
+    // Dispatch Notification
+    await Notification.create({
+      citizenId: issue.citizenId,
+      issueId: issue._id,
+      message: "Your issue has been successfully verified and securely closed by the department administration. Thank you for keeping our city clean."
+    });
 
     res.json({ message: "Issue successfully verified and closed.", issue });
   } catch (error) {

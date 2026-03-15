@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { getAuth } from "../auth/authStorage";
 
 import { Header } from "../components/Header";
-import { Hero } from "../components/Hero";
+import { HeroSection } from "../components/ui/hero-section-dark";
+import { IssueTrackingSection } from "../components/IssueTrackingSection";
+import { AdminManagementSection } from "../components/AdminManagementSection";
 import { Features } from "../components/Features";
 import { CTA } from "../components/CTA";
 import { Footer } from "../components/Footer";
@@ -19,10 +21,12 @@ export function HomePage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white overflow-hidden">
       <Header />
       <main className="flex-grow">
-        <Hero />
+        <HeroSection />
+        <IssueTrackingSection />
+        <AdminManagementSection />
         <Features />
         <CTA />
       </main>

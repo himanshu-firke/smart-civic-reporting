@@ -75,34 +75,46 @@ export function SuperAdminDashboardPage() {
       <DashboardHeader title="Super Admin" />
       
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-slate-200 pb-6">
-          <div>
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Global Command</h1>
-            <p className="mt-2 text-lg text-slate-600">City-wide system monitoring and analytics generation.</p>
-          </div>
+        {/* Premium Hero Header */}
+        <header className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-3xl p-8 md:p-12 shadow-2xl border border-slate-700/50">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-[80px] -z-0 translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-[80px] -z-0 -translate-x-1/2 translate-y-1/2"></div>
           
-          <div className="flex bg-white rounded-t-2xl border-b border-slate-200 overflow-x-auto shadow-sm">
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-xs font-bold tracking-wider uppercase mb-5 backdrop-blur-md shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> Supreme Commander
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none mb-3">Global Command</h1>
+            <p className="text-lg text-slate-300 max-w-xl font-medium">
+              City-wide system monitoring, administrative oversight, and geospatial analytics generation in real-time.
+            </p>
+          </div>
+        </header>
+
+        {/* Floating Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 md:gap-4 bg-white/60 backdrop-blur-md p-2 rounded-2xl border border-gray-200/60 shadow-sm w-full overflow-x-auto">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${activeTab === "overview" ? "border-b-4 border-slate-900 text-slate-900 bg-slate-100/50" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === "overview" ? "bg-slate-900 text-white shadow-lg shadow-slate-900/30 transform -translate-y-0.5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/80"}`}
             >
               System Health & Heatmap
             </button>
             <button
               onClick={() => setActiveTab("reports")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${activeTab === "reports" ? "border-b-4 border-slate-900 text-slate-900 bg-slate-100/50" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === "reports" ? "bg-slate-900 text-white shadow-lg shadow-slate-900/30 transform -translate-y-0.5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/80"}`}
             >
               Global Logs
             </button>
-            <div className="flex-1 min-w-[20px] border-b-4 border-transparent"></div>
+            
+            <div className="hidden sm:block flex-1"></div>
+            
             <button
               onClick={() => navigate("/super-admin/departments")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border-l border-slate-200`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-100 shadow-sm shadow-indigo-200/50 hover:shadow-indigo-500/30 group`}
             >
-              Manage Departments &rarr;
+               Manage Departments <span className="inline-block transform group-hover:translate-x-1 transition-transform">&rarr;</span>
             </button>
-          </div>
-        </header>
+        </div>
 
         {error && (
           <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl font-medium">
@@ -121,33 +133,34 @@ export function SuperAdminDashboardPage() {
             {activeTab === "overview" && metrics && (
               <div className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                   <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl shadow-slate-200/40 text-center relative overflow-hidden group">
-                      <div className="absolute inset-x-0 -bottom-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                   <div className="bg-white/90 backdrop-blur-md rounded-3xl p-8 border border-white shadow-xl shadow-slate-200/50 text-center relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 transform origin-left"></div>
                       <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mb-2">Total System Load</p>
-                      <h2 className="text-6xl font-black text-slate-900">{metrics.totalIssues}</h2>
-                      <p className="text-slate-400 text-sm mt-3">All civic issues ever tracked</p>
+                      <h2 className="text-6xl font-black text-slate-900 group-hover:scale-105 transition-transform">{metrics.totalIssues}</h2>
+                      <p className="text-slate-400 text-sm mt-3 font-medium">All tracked civic issues</p>
                    </div>
                    
-                   <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-xl shadow-slate-900/40 text-center text-white relative overflow-hidden">
-                      <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Active Field Ops</p>
-                      <h2 className="text-6xl font-black text-white">{metrics.byStatus?.InProgress || 0}</h2>
-                      <p className="text-slate-500 text-sm mt-3">Issues currently In Progress</p>
+                   <div className="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl p-8 border border-slate-800 shadow-xl shadow-indigo-900/30 text-center text-white relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                      <p className="text-indigo-200 font-bold uppercase tracking-widest text-xs mb-2 relative z-10">Active Field Ops</p>
+                      <h2 className="text-6xl font-black text-white relative z-10 group-hover:scale-105 transition-transform">{metrics.byStatus?.InProgress || 0}</h2>
+                      <p className="text-indigo-300/70 text-sm mt-3 font-medium relative z-10">Issues currently In Progress</p>
                    </div>
 
-                   <div className="bg-emerald-50 rounded-3xl p-8 border border-emerald-100 shadow-xl shadow-emerald-200/40 text-center relative overflow-hidden group">
-                      <div className="absolute inset-x-0 -bottom-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                   <div className="bg-emerald-50/80 backdrop-blur-md rounded-3xl p-8 border border-emerald-100 shadow-xl shadow-emerald-200/40 text-center relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="absolute inset-x-0 bottom-0 h-1.5 bg-gradient-to-r from-emerald-400 to-teal-400 transform origin-left"></div>
                       <p className="text-emerald-700 font-bold uppercase tracking-widest text-xs mb-2">Resolution Count</p>
-                      <h2 className="text-6xl font-black text-emerald-900">{(metrics.byStatus?.Resolved || 0) + (metrics.byStatus?.Closed || 0)}</h2>
-                      <p className="text-emerald-600/70 text-sm mt-3">Successfully fixed & closed</p>
+                      <h2 className="text-6xl font-black text-emerald-900 group-hover:scale-105 transition-transform">{(metrics.byStatus?.Resolved || 0) + (metrics.byStatus?.Closed || 0)}</h2>
+                      <p className="text-emerald-600/70 text-sm mt-3 font-medium">Successfully fixed & closed</p>
                    </div>
                 </div>
 
-                <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm mt-8">
-                  <h3 className="text-xl font-bold text-slate-900 mb-6">Status Distribution</h3>
+                <div className="bg-white/80 backdrop-blur-md rounded-3xl p-8 border border-white shadow-lg shadow-slate-200/40 mt-8">
+                  <h3 className="text-xl font-bold text-slate-900 mb-6 font-display tracking-tight">Status Distribution</h3>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                      {["Submitted", "Assigned", "InProgress", "Resolved", "Closed"].map(stat => (
-                       <div key={stat} className={`p-4 rounded-xl border-l-4 ${getStatusColor(stat)} shadow-sm`}>
-                         <p className="text-xs uppercase font-bold opacity-70 mb-1">{stat}</p>
+                       <div key={stat} className={`p-4 rounded-xl border-l-4 ${getStatusColor(stat)} shadow-sm hover:shadow-md transition-shadow`}>
+                         <p className="text-[10px] sm:text-xs uppercase font-bold opacity-70 mb-1 tracking-wider">{stat}</p>
                          <p className="text-2xl font-black">{metrics.byStatus?.[stat] || 0}</p>
                        </div>
                      ))}
@@ -156,12 +169,12 @@ export function SuperAdminDashboardPage() {
 
                 {/* --- DEPARTMENTAL CHARTS (ENHANCEMENT) --- */}
                 {metrics.byDepartment && metrics.byDepartment.length > 0 && (
-                  <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm mt-8">
-                    <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <div className="bg-white/80 backdrop-blur-md rounded-3xl p-8 border border-white shadow-lg shadow-slate-200/40 mt-8">
+                    <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3 font-display tracking-tight">
                        Departmental Load Tracking
-                       <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">{metrics.byDepartment.length} Active</span>
+                       <span className="bg-indigo-100 text-indigo-800 text-xs px-2.5 py-1 rounded-full font-black shadow-sm">{metrics.byDepartment.length} Active</span>
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {metrics.byDepartment.map(dept => {
                         const data = [
                           { name: 'Submitted', value: dept.statuses.Submitted },
@@ -174,32 +187,33 @@ export function SuperAdminDashboardPage() {
                         const total = data.reduce((sum, d) => sum + d.value, 0);
 
                         return (
-                           <div key={dept.name} className="border border-slate-100 rounded-2xl p-4 shadow-sm bg-slate-50/50 flex flex-col items-center">
+                           <div key={dept.name} className="border border-slate-100 rounded-2xl p-5 shadow-sm bg-gradient-to-br from-white to-slate-50/50 flex flex-col items-center hover:shadow-md transition-shadow">
                              <h4 className="font-bold text-slate-800 text-center w-full mb-1">{dept.name}</h4>
-                             <p className="text-xs font-bold text-slate-400 mb-4">{total} Total Tickets</p>
+                             <p className="text-xs font-bold text-slate-400 mb-4 tracking-wider uppercase">{total} Total Tickets</p>
                              
                              {total > 0 ? (
-                               <div className="w-full h-48">
-                                 <ResponsiveContainer width="100%" height="100%">
-                                   <PieChart>
-                                     <Pie
-                                       data={data}
-                                       cx="50%" cy="50%"
-                                       innerRadius={40} outerRadius={70}
-                                       paddingAngle={2}
-                                       dataKey="value"
-                                     >
-                                       {data.map((entry, index) => (
-                                         <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
-                                       ))}
-                                     </Pie>
-                                     <Tooltip formatter={(value) => [value, 'Tickets']} />
-                                     <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
-                                   </PieChart>
-                                 </ResponsiveContainer>
-                               </div>
+                                <div className="w-full h-48 drop-shadow-md">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                      <Pie
+                                        data={data}
+                                        cx="50%" cy="50%"
+                                        innerRadius={45} outerRadius={75}
+                                        paddingAngle={3}
+                                        dataKey="value"
+                                        stroke="none"
+                                      >
+                                        {data.map((entry, index) => (
+                                          <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
+                                        ))}
+                                      </Pie>
+                                      <Tooltip formatter={(value) => [value, 'Tickets']} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
+                                      <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} />
+                                    </PieChart>
+                                  </ResponsiveContainer>
+                                </div>
                              ) : (
-                               <div className="h-48 flex items-center justify-center text-slate-400 text-sm italic font-medium">No active tickets.</div>
+                                <div className="h-48 flex items-center justify-center text-slate-400 text-sm italic font-medium">No active tickets.</div>
                              )}
                            </div>
                         );
@@ -209,10 +223,12 @@ export function SuperAdminDashboardPage() {
                 )}
                 
                 {/* --- SUPER HEATMAP (MOVED FROM TAB 2) --- */}
-                <div className="bg-slate-900 rounded-3xl p-1 md:p-8 shadow-2xl shadow-slate-900/50 mt-8">
-                   <div className="mb-6 px-4 md:px-0 flex flex-col sm:flex-row justify-between sm:items-end gap-4">
+                <div className="bg-slate-900 rounded-3xl p-1 md:p-8 shadow-2xl shadow-slate-900/50 mt-8 relative overflow-hidden">
+                   <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                   
+                   <div className="mb-6 px-4 md:px-0 flex flex-col sm:flex-row justify-between sm:items-end gap-4 relative z-10">
                      <div>
-                       <h3 className="text-2xl font-bold text-white mb-2">Global Geospatial Array</h3>
+                       <h3 className="text-2xl font-bold text-white mb-2 font-display tracking-tight">Global Geospatial Array</h3>
                        <p className="text-slate-400 text-sm">Every civic issue simultaneously plotted over the infrastructure grid.</p>
                      </div>
                      <div className="text-left sm:text-right">
@@ -221,7 +237,7 @@ export function SuperAdminDashboardPage() {
                        </span>
                      </div>
                    </div>
-                   <div className="rounded-2xl overflow-hidden ring-4 ring-slate-800/80 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                   <div className="rounded-2xl overflow-hidden ring-4 ring-slate-800/80 shadow-[0_0_40px_rgba(0,0,0,0.5)] relative z-10">
                       <DepartmentHeatmap issues={issues} />
                    </div>
                 </div>

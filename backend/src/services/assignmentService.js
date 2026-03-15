@@ -1,5 +1,6 @@
 const Issue = require("../models/Issue");
 const Worker = require("../models/Worker");
+const Notification = require("../models/Notification");
 
 /**
  * Calculates the great-circle distance between two points on the Earth's surface
@@ -77,6 +78,14 @@ async function autoAssignWorker(issueId) {
       issue.assignedWorkerId = nearestWorker._id;
       issue.status = "Assigned";
       await issue.save();
+      
+      // Dispatch Notification
+      await Notification.create({
+        citizenId: issue.citizenId,
+        issueId: issue._id,
+        message: "Your issue has been automatically assigned to a field worker in your area."
+      });
+      
       console.log(`Auto-assigned Issue ${issueId} to Worker ${nearestWorker._id} (Distance: ${shortestDistance.toFixed(2)}km)`);
     } else {
        console.log(`No workers within operational radius found for Issue ${issueId}. Kept unassigned.`);

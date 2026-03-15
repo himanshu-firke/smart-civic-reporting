@@ -1,7 +1,27 @@
 @import "tailwindcss";
 
+@theme {
+  --font-geist: "Geist", "Inter", sans-serif;
+  --animate-grid: grid 15s linear infinite;
+  
+  @keyframes grid {
+    0% { transform: translateY(-50%) }
+    100% { transform: translateY(0) }
+  }
+}
+
 @layer base {
   body {
     @apply antialiased text-slate-900 bg-slate-50;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }

@@ -80,11 +80,20 @@ export function WorkerDashboardPage() {
       <DashboardHeader title="Worker" />
 
       <div className="p-8 max-w-7xl mx-auto">
-        <header className="mb-10">
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight">My Tasks</h1>
-          <p className="mt-2 text-lg text-gray-600">
-            View your active assignments and upload proof of completion.
-          </p>
+        {/* Premium Hero Header */}
+        <header className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-slate-800 to-emerald-900 rounded-3xl p-8 md:p-12 shadow-2xl border border-indigo-700/50 mb-10">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-[80px] -z-0 translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-emerald-500/20 rounded-full blur-[80px] -z-0 -translate-x-1/2 translate-y-1/2"></div>
+          
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-xs font-bold tracking-wider uppercase mb-5 backdrop-blur-md shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Field Operative
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none mb-3">My Tasks</h1>
+            <p className="text-lg text-indigo-100/90 max-w-xl font-medium">
+              View your active field assignments, update progress, and upload photographic proof of completion.
+            </p>
+          </div>
         </header>
 
         {error && (
@@ -102,17 +111,19 @@ export function WorkerDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* Active Queue */}
-            <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/40 border border-gray-100 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Active Queue</h2>
-                <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-xl shadow-indigo-100/50 border border-white p-8 relative overflow-hidden group">
+              <div className="absolute -inset-2 bg-gradient-to-br from-indigo-50 to-white -z-10 group-hover:from-indigo-100/50 transition-colors duration-500"></div>
+              
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-900 to-slate-800 bg-clip-text text-transparent">Active Queue</h2>
+                <span className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
                   {activeIssues.length} Pending
                 </span>
               </div>
 
               {activeIssues.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                   <p className="text-gray-500">No active tasks assigned to you right now.</p>
+                <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm">
+                   <p className="text-gray-500 font-medium">No active tasks assigned to you right now.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -120,19 +131,24 @@ export function WorkerDashboardPage() {
                     <div 
                       key={issue._id} 
                       onClick={() => setSelectedIssue(issue)}
-                      className="group cursor-pointer border border-gray-100 bg-gray-50 hover:bg-white hover:border-indigo-200 hover:shadow-md transition-all rounded-2xl p-5"
+                      className="group/card cursor-pointer border border-gray-100 bg-white hover:bg-gradient-to-br hover:from-white hover:to-indigo-50/50 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl p-6 relative overflow-hidden transform hover:-translate-y-1"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className={`text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wide
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-400 to-blue-500 opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                      <div className="flex justify-between items-start mb-3">
+                        <span className={`text-xs font-black px-2.5 py-1 rounded-md uppercase tracking-wider
                           ${issue.status === 'Assigned' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700'}`}>
                           {issue.status}
                         </span>
-                        <span className="text-xs text-gray-400 font-mono">
+                        <span className="text-xs text-gray-400 font-mono font-medium">
                           {new Date(issue.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-gray-900 font-semibold text-lg line-clamp-1">{issue.description}</p>
-                      <p className="text-sm text-gray-500 mt-1">{issue.departmentId?.name || "Civic Dept."}</p>
+                      <p className="text-gray-900 font-bold text-lg line-clamp-2 mb-2 group-hover/card:text-indigo-700 transition-colors">{issue.description}</p>
+                      
+                      <div className="flex items-center text-xs text-gray-500 font-medium pt-3 mt-auto border-t border-gray-50">
+                        <svg className="w-4 h-4 mr-1.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        {issue.departmentId?.name || "Civic Dept."}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -140,28 +156,33 @@ export function WorkerDashboardPage() {
             </div>
 
             {/* Completed Work */}
-            <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/40 border border-gray-100 p-8 opacity-80">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Completed Work</h2>
-                <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
+            <div className="bg-emerald-50/50 backdrop-blur-md rounded-3xl shadow-lg border border-emerald-100 p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-emerald-950">Completed Work</h2>
+                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-md shadow-emerald-500/20">
                   {completedIssues.length} Fixed
                 </span>
               </div>
 
               {completedIssues.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                   <p className="text-gray-500">You haven't completed any tasks yet.</p>
+                <div className="text-center py-12 bg-white/60 rounded-2xl border border-dashed border-emerald-200">
+                   <p className="text-emerald-700/60 font-medium">You haven't completed any tasks yet.</p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                   {completedIssues.map(issue => (
-                    <div key={issue._id} className="border border-green-100 bg-green-50/30 rounded-2xl p-5 flex gap-4">
+                    <div key={issue._id} className="bg-white border border-emerald-100/60 hover:border-emerald-300 rounded-2xl p-5 flex gap-4 transition-colors shadow-sm">
                        {issue.completionImageUrl && (
-                         <img src={issue.completionImageUrl} alt="Fix" className="w-16 h-16 rounded-xl object-cover shrink-0 border border-green-200" />
+                         <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-emerald-100 shadow-sm relative group">
+                           <img src={issue.completionImageUrl} alt="Fix" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                         </div>
                        )}
-                       <div>
-                         <p className="text-gray-900 font-semibold line-clamp-1">{issue.description}</p>
-                         <p className="text-xs text-gray-500 mt-1">Resolved on {new Date(issue.updatedAt).toLocaleDateString()}</p>
+                       <div className="flex flex-col justify-center">
+                         <p className="text-emerald-950 font-bold line-clamp-2 leading-tight mb-2">{issue.description}</p>
+                         <p className="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded inline-flex items-center gap-1.5 w-max">
+                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                           Resolved {new Date(issue.updatedAt).toLocaleDateString()}
+                         </p>
                        </div>
                     </div>
                   ))}
@@ -248,7 +269,7 @@ export function WorkerDashboardPage() {
                     <button 
                       onClick={() => handleUpdateStatus(selectedIssue._id, "Resolved")}
                       disabled={actionLoading || !completionImage}
-                      className="w-full py-4 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition-all shadow-lg shadow-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                      className="w-full py-4 rounded-xl font-black tracking-wide text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 transition-all shadow-xl shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed mt-4 transform hover:-translate-y-1"
                     >
                       {actionLoading ? "Resolving..." : "Submit Proof & Resolve Issue"}
                     </button>

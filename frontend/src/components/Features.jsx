@@ -42,14 +42,21 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-24 bg-gray-50 border-t border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+    <section className="py-32 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
+      {/* Glows */}
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-20 animate-in fade-in slide-in-from-bottom-8">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-emerald-300 text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
+            Capabilities
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-6 font-display tracking-tight">
             Powerful tools for better communities
           </h2>
-          <p className="text-xl text-gray-600">
-            Everything citizens and authorities need to streamline civic maintenance.
+          <p className="text-xl text-slate-400 font-medium">
+            Everything citizens and authorities need to streamline civic maintenance, rendered in real-time.
           </p>
         </div>
 
@@ -57,15 +64,17 @@ export function Features() {
           {features.map((feature, idx) => (
             <div 
               key={idx}
-              className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-100 transition-all duration-300 group"
+              className="bg-slate-800/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:border-indigo-500/50 shadow-2xl shadow-black/20 hover:shadow-indigo-500/20 transition-all duration-500 group transform hover:-translate-y-2 hover:bg-slate-800/60 relative overflow-hidden"
             >
-              <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
-                <div className="group-hover:text-white transition-colors">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="w-16 h-16 bg-slate-900/80 rounded-2xl flex items-center justify-center mb-8 border border-white/5 group-hover:bg-indigo-600/20 group-hover:border-indigo-400/30 transition-all duration-500 shadow-inner">
+                <div className="group-hover:text-emerald-400 group-hover:scale-110 transition-all duration-500">
                   {feature.icon}
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed text-sm">
+              <h3 className="text-xl font-bold text-white mb-4 group-hover:text-indigo-300 transition-colors">{feature.title}</h3>
+              <p className="text-slate-400 leading-relaxed text-sm font-medium">
                 {feature.description}
               </p>
             </div>

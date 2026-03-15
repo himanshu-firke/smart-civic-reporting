@@ -2,6 +2,7 @@ const express = require("express");
 const Issue = require("../models/Issue");
 const Department = require("../models/Department");
 const Worker = require("../models/Worker");
+const Notification = require("../models/Notification");
 const { authMiddleware } = require("../middleware/auth");
 const { requireRole } = require("../middleware/requireRole");
 const { autoAssignWorker } = require("../services/assignmentService");
@@ -98,6 +99,13 @@ issuesRouter.put("/:id/reassign", requireRole(["SuperAdmin", "DepartmentAdmin"])
     issue.assignedWorkerId = assignedWorkerId;
     issue.status = "Assigned";
     await issue.save();
+
+    // Dispatch Notification
+    await Notification.create({
+      citizenId: issue.citizenId,
+      issueId: issue._id,
+      message: "An Administrator has manually reassigned your issue to a specialized field worker."
+    });
 
     res.json({
        message: "Issue successfully reassigned.",

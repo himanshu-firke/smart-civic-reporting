@@ -101,6 +101,17 @@ export function DepartmentAdminDashboardPage() {
     }
   };
 
+  const handleOpenVerifyModal = async (issue) => {
+    try {
+      // Fetch full issue details to get the image URLs which were omitted from the summary list
+      const data = await apiFetch(`/api/dept-admin/issues/${issue._id}`);
+      setSelectedIssue(data.issue);
+    } catch (err) {
+      alert("Failed to fetch full issue details.");
+      setSelectedIssue(issue); // Fallback to list details if network fetch fails
+    }
+  };
+
   const handleUpdatePriority = async (issueId, newPriority) => {
     try {
       await apiFetch(`/api/dept-admin/issues/${issueId}/priority`, {
@@ -187,39 +198,49 @@ export function DepartmentAdminDashboardPage() {
       <DashboardHeader title={auth?.departmentName || "Department HQ"} />
 
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-200 pb-6">
-          <div>
-            <h1 className="text-4xl font-black text-gray-900 tracking-tight">Command Center</h1>
-            <p className="mt-2 text-lg text-gray-600">Oversee active complaints and manage your civic workforce.</p>
-          </div>
+        {/* Premium Hero Header */}
+        <header className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-violet-900 rounded-3xl p-8 md:p-12 shadow-2xl border border-indigo-700/50">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/30 rounded-full blur-[80px] -z-0 translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-violet-500/30 rounded-full blur-[80px] -z-0 -translate-x-1/2 translate-y-1/2"></div>
           
-          <div className="flex bg-white rounded-t-2xl border-b border-gray-200 overflow-x-auto shadow-sm">
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-xs font-bold tracking-wider uppercase mb-5 backdrop-blur-md shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Live System Admin
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-none mb-3">Command Center</h1>
+              <p className="text-lg text-indigo-100/90 max-w-xl font-medium">Oversee active complaints, deploy operatives, and monitor geospatial city infrastructure in real-time.</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Floating Navigation Tabs */}
+        <div className="flex flex-wrap gap-2 md:gap-4 bg-white/60 backdrop-blur-md p-2 rounded-2xl border border-gray-200/60 shadow-sm w-full md:w-fit overflow-x-auto">
             <button
               onClick={() => setActiveTab("workers")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${activeTab === "workers" ? "border-b-4 border-indigo-600 text-indigo-700 bg-indigo-50/50" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === "workers" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transform -translate-y-0.5" : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80"}`}
             >
               Worker Roster
             </button>
             <button
               onClick={() => setActiveTab("issues")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${activeTab === "issues" ? "border-b-4 border-indigo-600 text-indigo-700 bg-indigo-50/50" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === "issues" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transform -translate-y-0.5" : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80"}`}
             >
               Issue Tracking
             </button>
             <button
               onClick={() => setActiveTab("map")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${activeTab === "map" ? "border-b-4 border-indigo-600 text-indigo-700 bg-indigo-50/50" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === "map" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transform -translate-y-0.5" : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80"}`}
             >
               Geospatial Analytics
             </button>
             <button
               onClick={() => setActiveTab("analytics")}
-              className={`px-8 py-5 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors border-l border-gray-100 ${activeTab === "analytics" ? "border-b-4 border-indigo-600 text-indigo-700 bg-indigo-50/50" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"}`}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all duration-300 whitespace-nowrap ${activeTab === "analytics" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transform -translate-y-0.5" : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/80"}`}
             >
               Worker Analytics
             </button>
-          </div>
-        </header>
+        </div>
 
         {/* ------------------------------------------------------------- 
             TAB 1: ISSUE TRACKING (MODULE 11)
@@ -295,8 +316,8 @@ export function DepartmentAdminDashboardPage() {
                              {/* Verify Button pops the modal */}
                              {issue.status === "Resolved" && (
                                 <button 
-                                  onClick={() => setSelectedIssue(issue)}
-                                  className="text-xs font-bold text-white px-3 py-1.5 rounded bg-green-600 hover:bg-green-700 shadow-sm shadow-green-500/30 transition-all"
+                                  onClick={() => handleOpenVerifyModal(issue)}
+                                  className="text-xs font-bold text-white px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-md shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5"
                                 >
                                   Verify Fix
                                 </button>

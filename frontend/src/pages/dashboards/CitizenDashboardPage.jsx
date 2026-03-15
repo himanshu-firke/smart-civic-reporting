@@ -12,10 +12,33 @@ export function CitizenDashboardPage() {
   
   // Modal State
   const [selectedIssue, setSelectedIssue] = useState(null);
+  
+  // Notification State
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     fetchMyIssues();
+    fetchNotifications();
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await apiFetch("/api/citizen/notifications");
+      setNotifications(data.notifications || []);
+    } catch (err) {
+      console.error("Failed to load notifications", err);
+    }
+  };
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await apiFetch(`/api/citizen/notifications/${id}/read`, { method: "PUT" });
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    } catch (err) {
+      console.error("Failed to mark notification active", err);
+    }
+  };
 
   const fetchMyIssues = async () => {
     try {
@@ -50,9 +73,73 @@ export function CitizenDashboardPage() {
   const activeIssues = issues.filter(i => i.status !== "Closed");
   const closedIssues = issues.filter(i => i.status === "Closed");
 
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <DashboardHeader title="Citizen" />
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans relative">
+      <DashboardHeader title="Citizen">
+        {/* Notification Bell */}
+        <div className="relative mr-2">
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-2 text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 rounded-full transition-colors relative"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+            )}
+          </button>
+
+          {/* Notification Flyout Panel */}
+          {showNotifications && (
+            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+              <div className="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                <h3 className="font-bold text-gray-900">Notifications</h3>
+                {unreadCount > 0 && (
+                  <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">{unreadCount} New</span>
+                )}
+              </div>
+              <div className="max-h-[400px] overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400 text-sm">
+                    No notifications yet.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {notifications.map(notif => (
+                      <div 
+                        key={notif._id} 
+                        className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer flex gap-4 ${!notif.isRead ? 'bg-indigo-50/30' : ''}`}
+                        onClick={() => {
+                          if (!notif.isRead) handleMarkAsRead(notif._id);
+                          const linkedIssue = issues.find(i => i._id === notif.issueId);
+                          if (linkedIssue) setSelectedIssue(linkedIssue);
+                          setShowNotifications(false);
+                        }}
+                      >
+                        <div className={`mt-1 h-2 w-2 rounded-full shrink-0 ${!notif.isRead ? 'bg-indigo-500' : 'bg-transparent'}`}></div>
+                        <div>
+                          <p className={`text-sm ${!notif.isRead ? 'text-gray-900 font-semibold' : 'text-gray-600'}`}>
+                            {notif.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1 font-mono">
+                            {new Date(notif.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
+                <button onClick={() => setShowNotifications(false)} className="text-xs font-bold text-gray-500 hover:text-gray-700">Close</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </DashboardHeader>
       
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8">
         

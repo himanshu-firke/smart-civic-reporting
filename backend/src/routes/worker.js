@@ -1,6 +1,7 @@
 const express = require("express");
 const Issue = require("../models/Issue");
 const Worker = require("../models/Worker");
+const Notification = require("../models/Notification");
 const { authMiddleware } = require("../middleware/auth");
 const { requireRole } = require("../middleware/requireRole");
 const { uploadBase64Image } = require("../utils/cloudinary");
@@ -90,8 +91,24 @@ workerRouter.put("/issues/:id/status", async (req, res) => {
 
     await issue.save();
 
+    // Dispatch Notification based on the new status
+    let notificationMessage = "";
+    if (status === "In Progress") {
+       notificationMessage = "Work has begun on your reported issue.";
+    } else if (status === "Resolved") {
+       notificationMessage = "A field worker has resolved your issue and uploaded proof. It's pending final verify.";
+    }
+
+    if (notificationMessage) {
+      await Notification.create({
+        citizenId: issue.citizenId,
+        issueId: issue._id,
+        message: notificationMessage
+      });
+    }
+
     res.json({
-       message: `Issue updated to ${status} successfully.`,
+       message: "Issue status updated successfully.",
        issue: {
          id: issue._id,
          status: issue.status,
