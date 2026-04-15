@@ -155,4 +155,11 @@ Submitted → Assigned to Worker → In Progress → Resolved → Closed
 
 ---
 
+## Achievements
+```
+Secured 2nd Prize at National Level Project Competition, Held at V.B.Kolte College of Engineering, Jalgaon
+```
+
+---
+
 > Built with ❤️ for smarter cities and better civic engagement.
